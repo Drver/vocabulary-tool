@@ -14,6 +14,8 @@ public class Vocabulary {
 
   private Integer status;
 
+  private Integer error;
+
   public Integer getId() {
     return id;
   }
@@ -60,6 +62,14 @@ public class Vocabulary {
 
   public void setStatus(Integer status) {
     this.status = status;
+  }
+
+  public Integer getError() {
+    return error;
+  }
+
+  public void setError(Integer error) {
+    this.error = error;
   }
 
 }

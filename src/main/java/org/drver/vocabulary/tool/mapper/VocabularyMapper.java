@@ -11,7 +11,6 @@ import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Result;
 
 import org.drver.vocabulary.tool.domain.Vocabulary;
-import org.drver.vocabulary.tool.domain.Error;
 
 public interface VocabularyMapper {
 
@@ -46,6 +45,9 @@ public interface VocabularyMapper {
           + "<if test=\"status != null \">"
           + " AND status = #{status} "
           + "</if>"
+          + "<if test=\"error != null \">"
+          + " AND error = #{error} "
+          + "</if>"
           + "</script>")
   @Results({
     @Result(id=true, column="id", property="id"),
@@ -54,6 +56,7 @@ public interface VocabularyMapper {
     @Result(column="word", property="word"),
     @Result(column="meaning", property="meaning"),
     @Result(column="status", property="status"),
+    @Result(column="error", property="error"),
   })
   public List<Vocabulary> selectVocabulary(Vocabulary query);
 
@@ -74,6 +77,9 @@ public interface VocabularyMapper {
           + "<if test=\"status != null \">"
           + " status, "
           + "</if>"
+          + "<if test=\"error != null \">"
+          + " error, "
+          + "</if>"
           + " create_time "
           + ") "
           + " VALUES ( "
@@ -91,6 +97,9 @@ public interface VocabularyMapper {
           + "</if>"
           + "<if test=\"status != null \">"
           + " #{status}, "
+          + "</if>"
+          + "<if test=\"error != null \">"
+          + " #{error}, "
           + "</if>"
           + " now() "
           + ")"
@@ -115,6 +124,9 @@ public interface VocabularyMapper {
           + "<if test=\"status != null \">"
           + " status = #{status}, "
           + "</if>"
+          + "<if test=\"error != null \">"
+          + " error = #{error}, "
+          + "</if>"
           + "</set>"
           + "<where>"
           + "<if test=\"id != null\">"
@@ -125,62 +137,17 @@ public interface VocabularyMapper {
   public void updateVocabulary(Vocabulary vocabulary);
 
   @Select("<script>"
-          + "SELECT * FROM error "
-          + " WHERE 1 = 1 "
-          + "<if test=\"id != null \">"
-          + " AND id = #{id} "
-          + "</if>"
-          + "<if test=\"vId != null \">"
-          + " AND v_id = #{vId} "
-          + "</if>"
-          + "<if test=\"time != null \">"
-          + " AND time = #{time} "
-          + "</if>"
+          + "SELECT * FROM vocabulary "
+          + " WHERE error > 0 "
           + "</script>")
   @Results({
     @Result(id=true, column="id", property="id"),
-    @Result(column="v_id", property="vId"),
-    @Result(column="time", property="time"),
+    @Result(column="type", property="type"),
+    @Result(column="list", property="list"),
+    @Result(column="word", property="word"),
+    @Result(column="meaning", property="meaning"),
+    @Result(column="status", property="status"),
+    @Result(column="error", property="error"),
   })
-  public List<Error> selectError(Error query);
-
-  @Insert("<script>"
-          + "INSERT INTO error ( "
-          + "<if test=\"vId != null \">"
-          + " v_id, "
-          + "</if>"
-          + "<if test=\"time != null \">"
-          + " time, "
-          + "</if>"
-          + " create_time "
-          + ") "
-          + " VALUES ( "
-          + "<if test=\"vId != null \">"
-          + " #{vId}, "
-          + "</if>"
-          + "<if test=\"time != null \">"
-          + " #{time}, "
-          + "</if>"
-          + " now() "
-          + ")"
-          + "</script>")
-  public void insertError(Error error);
-
-  @Update("<script>"
-          + "UPDATE error "
-          + "<set>"
-          + "<if test=\"vId != null \">"
-          + " v_id = #{vId}, "
-          + "</if>"
-          + "<if test=\"time != null \">"
-          + " time = #{time}, "
-          + "</if>"
-          + "</set>"
-          + "<where>"
-          + "<if test=\"id != null\">"
-          + " and id = #{id} "
-          + "</if>"
-          + "</where>"
-          + "</script>")
-  public void updateError(Error error);
+  public List<Vocabulary> selectError();
 }

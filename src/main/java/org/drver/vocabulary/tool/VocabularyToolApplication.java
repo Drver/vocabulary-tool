@@ -25,7 +25,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.drver.vocabulary.tool.mapper.VocabularyMapper;
 import org.drver.vocabulary.tool.domain.Vocabulary;
-import org.drver.vocabulary.tool.domain.Error;
 import org.drver.vocabulary.tool.util.Util;
 
 @SpringBootApplication
@@ -52,8 +51,12 @@ public class VocabularyToolApplication implements CommandLineRunner {
   private void start() {
 
     String useType = "";
-    while(!useType.equals("R") && !useType.equals("N") && !useType.equals("I")) {
-      Util.println("New(N), Review(R) or Import(I)?");
+    boolean quit = false;
+    while(!quit) {
+      Util.println("New(N)");
+      Util.println("Review(R)");
+      Util.println("Error(E)");
+      Util.println("Import(I)");
       useType = scanner.nextLine().toUpperCase();
       if(useType.equals("R")) {
         review();
@@ -61,8 +64,10 @@ public class VocabularyToolApplication implements CommandLineRunner {
         newV();
       } else if(useType.equals("I")) {
         importV();
+      } else if(useType.equals("E")) {
+        errorV();
       } else {
-
+        quit = true;
       }
     }
   }
@@ -167,17 +172,10 @@ public class VocabularyToolApplication implements CommandLineRunner {
   private void groupReview(List<Vocabulary> list) {
 
     Util.println("");
-    Util.println("word 2 meaning. Y or N:");
+    Util.println("word 2 meaning.");
     Util.shuffle(list);
     for(Vocabulary v : list) {
       word2Meaning(v);
-      Util.println("");
-    }
-    Util.println("");
-    Util.println("meaning 2 word. Input word:");
-    Util.shuffle(list);
-    for(Vocabulary v : list) {
-      meaning2Word(v);
       Util.println("");
     }
     Util.println("");
@@ -188,85 +186,111 @@ public class VocabularyToolApplication implements CommandLineRunner {
   private void word2Meaning(Vocabulary v) {
 
     Util.println(v.getWord());
-    String ok = "";
-    while(!ok.equals("Y") && !ok.equals("N")) {
+    String ok = "T";
+    while(!ok.equals("Y") && !ok.equals("N") && !ok.equals("")) {
 
       ok = scanner.nextLine().toUpperCase();
       if(ok.equals("N")) {
         error(v);
-      } else if(ok.equals("Y")) {
+      } else if(ok.equals("Y") || ok.equals("")) {
 
+      } else {
+
+      }
+    }
+    Util.println(v.getMeaning());
+    ok = "T";
+    while(!ok.equals("Y") && !ok.equals("N") && !ok.equals("")) {
+
+      ok = scanner.nextLine().toUpperCase();
+      if(ok.equals("N")) {
+        error(v);
+      } else if(ok.equals("Y") || ok.equals("")) {
+        right(v);
       } else {
 
       }
     }
     v.setStatus(1);
     vocabularyMapper.updateVocabulary(v);
-    Util.println(v.getMeaning());
-  }
-
-  private void meaning2Word(Vocabulary v) {
-
-    Util.println(v.getMeaning());
-    String word = scanner.nextLine();
-    if(!word.equals(v.getWord())) {
-      error(v);
-      Util.println(v.getWord());
-    }
-    v.setStatus(1);
-    vocabularyMapper.updateVocabulary(v);
   }
 
   private void error(Vocabulary v) {
-    Error query = new Error();
-    query.setVId(v.getId());
 
-    List<Error> errorList = vocabularyMapper.selectError(query);
-    if(errorList.size() == 0) {
-      query.setTime(1);
-      vocabularyMapper.insertError(query);
-    } else {
-      Error error = errorList.get(0);
-      error.setTime(error.getTime() + 1);
-      vocabularyMapper.updateError(error);
+    v.setError(v.getError() + 1);
+    vocabularyMapper.updateVocabulary(v);
+  }
+
+  private void right(Vocabulary v) {
+
+    if(v.getError() > 0) {
+      v.setError(v.getError() - 1);
+      vocabularyMapper.updateVocabulary(v);
+    }
+  }
+
+  private void errorV() {
+
+    List<Vocabulary> errorList = vocabularyMapper.selectError();
+    Util.shuffle(errorList);
+
+    List<List<Vocabulary>> reviewListList = new ArrayList<List<Vocabulary>>();
+    List<Vocabulary> reviewList = new ArrayList<Vocabulary>();
+
+    for(int i = 0; i < errorList.size(); i++) {
+
+      reviewList.add(errorList.get(i));
+      if(reviewList.size() >= 10 || i == errorList.size() - 1) {
+        reviewListList.add(reviewList);
+        reviewList = new ArrayList<Vocabulary>();
+      }
+    }
+
+    for(int i = 0; i < reviewListList.size(); i++) {
+      groupReview(reviewListList.get(i));
     }
   }
 
   private void importV() {
 
     Util.println("Input file path:");
-    String path = scanner.nextLine();
+    String pathStr = scanner.nextLine();
 
-    File file = new File(path);
-    if(!file.exists() || file.isDirectory()) {
+    File path = new File(pathStr);
+    if(!path.exists() || !path.isDirectory()) {
       return;
     }
 
-    List<String[]> dataList = null;
-    try {
-      dataList = getExcelData(file);
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
+    File[] files = path.listFiles();
+
     Util.println("Input vocabulary type:");
     String type = scanner.nextLine();
 
-    Util.println("Input list number:");
-    Integer list = Integer.valueOf(scanner.nextLine());
+    for(File file : files) {
+      List<String[]> dataList = null;
+      try {
+        dataList = getExcelData(file);
+      } catch(IOException e) {
+        e.printStackTrace();
+      }
 
-    for(String[] data : dataList) {
+      Integer list = Integer.valueOf(file.getName().split("\\.")[0]);
 
-      String word = data[0];
-      String meaning = data[1];
+      for(String[] data : dataList) {
 
-      Vocabulary vocabulary = new Vocabulary();
-      vocabulary.setType(type);
-      vocabulary.setList(list);
-      vocabulary.setWord(word);
-      vocabulary.setMeaning(meaning);
-      vocabulary.setStatus(0);
+        String word = data[0];
+        String meaning = data[1];
 
-      vocabularyMapper.insertVocabulary(vocabulary);
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.setType(type);
+        vocabulary.setList(list);
+        vocabulary.setWord(word);
+        vocabulary.setMeaning(meaning);
+        vocabulary.setStatus(0);
+        vocabulary.setError(0);
+
+        vocabularyMapper.insertVocabulary(vocabulary);
+      }
     }
   }
 

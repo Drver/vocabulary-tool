@@ -24,31 +24,6 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `vocabulary_tool` /*!40100 DEFAULT CHAR
 USE `vocabulary_tool`;
 
 --
--- Table structure for table `error`
---
-
-DROP TABLE IF EXISTS `error`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `error` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `v_id` bigint(20) NOT NULL,
-  `time` int(4) NOT NULL,
-  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `error`
---
-
-LOCK TABLES `error` WRITE;
-/*!40000 ALTER TABLE `error` DISABLE KEYS */;
-/*!40000 ALTER TABLE `error` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `vocabulary`
 --
 
@@ -62,6 +37,7 @@ CREATE TABLE `vocabulary` (
   `word` varchar(30) NOT NULL,
   `meaning` varchar(512) NOT NULL,
   `status` int(1) NOT NULL,
+  `error` int(5) NOT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -85,4 +61,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-15 10:48:21
+-- Dump completed on 2018-03-23 11:46:23

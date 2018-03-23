@@ -6,7 +6,7 @@
   <groupId>org.drver</groupId>
   <artifactId>vocabulary-tool</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <name>vocabulary-tool Maven Webapp</name>
   <url>http://maven.apache.org</url>
 
